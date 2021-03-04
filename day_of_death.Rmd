@@ -14,8 +14,53 @@ library(tidyverse)
 # We are using the data.table package because it is faster. Note how it also
 # provides a handier error message about the bad line in the file.
 
-x <- data.table::fread("~/bunmd_v2.csv", nrows = 100) %>% 
+x <- data.table::fread("~/bunmd_v2.csv") %>% 
   as_tibble() %>% 
   select(ssn, lname, dyear, dmonth, dday, byear, bmonth, bday)
+```
+```{r}
+# Play with small slice 1% of data
+small <- x %>% 
+  slice_sample(prop = 0.01)
+```
+
+What is the ratio of deaths (or births) on the 1st relative to the 15th?
+April 1, 2021 vs April 15, 2021. 
+
+population
+representativeness
+validity
+
+```{r}
+# small %>% 
+#   filter(dday == 15) %>% 
+#   ggplot(aes(x = dyear)) +
+#   geom_bar()
+
+small %>%
+  filter(dday == 1 | dday == 15) %>% 
+  group_by(dyear, dday) %>% 
+  summarise(dday_per_year = n(),
+            .groups = "drop") %>% 
+  pivot_wider(names_from = dday, values_from = dday_per_year, names_prefix = "dyear_") %>% 
+  mutate(ratio = dyear_15/dyear_1) %>% 
+  drop_na() %>% 
+  ggplot(aes(x = dyear, y = ratio)) +
+  geom_point()
+  
+
+
+      
+  
+# small %>% 
+#   ggplot(aes(x = dday)) +
+#   geom_bar()
+
+# small %>% 
+#   filter(dday == 15) %>% 
+#   filter(year <= 1970) %>% 
+#   count()
+  
+
 ```
 
